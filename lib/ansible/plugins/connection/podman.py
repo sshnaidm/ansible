@@ -132,10 +132,10 @@ class Connection(ConnectionBase):
         display.vvv("PUT %s TO %s" % (in_path, out_path), host=self._container_id)
         if not self._mount_point:
             rc, stdout, stderr = self._podman(
-                "cp", [in_path, self._container_id + ":" + out_path], use_container_id=False)
+                "cp", ["--pause=false", in_path, self._container_id + ":" + out_path.rstrip("/")], use_container_id=False)
             if rc != 0:
-                raise AnsibleError("Failed to copy file from %s to %s in container %s\n%s" % (
-                    in_path, out_path, self._container_id, stderr))
+                raise AnsibleError("Failed to copy file from %s to %s in container %s\n%s\n%s" % (
+                    in_path, out_path, self._container_id, stderr, stdout))
         else:
             real_out_path = self._mount_point + to_bytes(out_path, errors='surrogate_or_strict')
             shutil.copyfile(
@@ -149,10 +149,10 @@ class Connection(ConnectionBase):
         display.vvv("FETCH %s TO %s" % (in_path, out_path), host=self._container_id)
         if not self._mount_point:
             rc, stdout, stderr = self._podman(
-                "cp", [self._container_id + ":" + in_path, out_path], use_container_id=False)
+                "cp", ["--pause=false", self._container_id + ":" + in_path, out_path.rstrip("/")], use_container_id=False)
             if rc != 0:
-                raise AnsibleError("Failed to fetch file from %s to %s from container %s\n%s" % (
-                    in_path, out_path, self._container_id, stderr))
+                raise AnsibleError("Failed to fetch file from %s to %s from container %s\n%s\n%s" % (
+                    in_path, out_path, self._container_id, stderr, stdout))
         else:
             real_in_path = self._mount_point + to_bytes(in_path, errors='surrogate_or_strict')
             shutil.copyfile(
